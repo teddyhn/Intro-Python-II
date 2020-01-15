@@ -1,5 +1,16 @@
 from room import Room
 from player import Player
+from item import Item
+
+# Declare items
+
+items = {
+    'herb': Item('herb', 'Eating this makes you feel funny.'),
+
+    'ring': Item('ring', 'Looks shiny and precious.'),
+
+    'potion': Item('potion', 'Drink this and find out what happens.')
+}
 
 # Declare all the rooms
 
@@ -34,6 +45,11 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
+# Add items to rooms
+
+room['outside'].items = [items['herb']]
+room['overlook'].items = [items['ring'], items['potion']]
+
 #
 # Main
 #
@@ -56,24 +72,52 @@ new_player = Player('Jeff', room['outside'])
 directions = ['n', 's', 'e', 'w']
 
 while True:
-    print(f'Current room: {new_player.current_room.name}.')
+    print(f'\nCurrent room: {new_player.current_room.name}.')
     print(f'"{new_player.current_room.description}"\n')
 
-    key = input("How will you proceed? ").lower()
+    if new_player.current_room.items:
+        print(f'Loot available: {new_player.current_room.items}\n')
 
-    if key in directions:
-        if key == 'n' and new_player.current_room.n_to != None:
-            new_player.current_room = new_player.current_room.n_to
-        elif key == 's' and new_player.current_room.s_to != None:
-            new_player.current_room = new_player.current_room.s_to
-        elif key == 'e' and new_player.current_room.e_to != None:
-            new_player.current_room = new_player.current_room.e_to
-        elif key == 'w' and new_player.current_room.w_to != None:
-            new_player.current_room = new_player.current_room.w_to
+    command = input("How will you proceed? ").lower()
+    command = command.split()
+
+    if len(command) == 2:
+        verb = command[0]
+        item = command[1]
+
+        if verb == 'get' or verb =='take':
+            for i in new_player.current_room.items:
+                if i.name == item:
+                    new_player.current_room.items.remove(i)
+                    new_player.inventory.append(i)
+                    i.on_take()
+                else:
+                    print('\nError: item not found.')
+        if verb == 'drop':
+            for i in new_player.inventory:
+                if i.name == item:
+                    new_player.inventory.remove(i)
+                    new_player.current_room.items.append(i)
+                    i.on_drop()
+
+    if len(command) == 1:
+        command = command[0]
+
+        if command in directions:
+            if command == 'n' and new_player.current_room.n_to != None:
+                new_player.current_room = new_player.current_room.n_to
+            elif command == 's' and new_player.current_room.s_to != None:
+                new_player.current_room = new_player.current_room.s_to
+            elif command == 'e' and new_player.current_room.e_to != None:
+                new_player.current_room = new_player.current_room.e_to
+            elif command == 'w' and new_player.current_room.w_to != None:
+                new_player.current_room = new_player.current_room.w_to
+            else:
+                command = input("An obstacle prevents you from going that way. (Press Enter to continue)\n").lower()
+        elif command == 'i' or command == 'inventory':
+            print(f'\nInventory: {new_player.inventory}')
+        elif command == 'q':
+            print(f'Goodbye {new_player.name}! (You have quit the game)')
+            break
         else:
-            key = input("An obstacle prevents you from going that way. (Press Enter to continue)").lower()
-    elif key == 'q':
-        print(f'Goodbye {new_player.name}! (You have quit the game)')
-        break
-    else:
-        print("Invalid input. Try again. (Hint: N, S, E, or W) ")
+            print("Invalid input. Try again. (Hint: N, S, E, or W)\n")
