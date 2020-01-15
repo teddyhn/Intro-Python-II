@@ -31,6 +31,8 @@ to north. The smell of gold permeates the air."""),
     'treasure': Room("Treasure Chamber", """You've found the long-lost treasure
 chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
+
+    'secret': Room("Secret Room", """You've happened upon a secret room. At the end of the room a sign posted on the wall reads: "Congratulations! You've reached the secret room and found the real treasure: finishing your stretch goals!" W-Wait... Huh?""")
 }
 
 
@@ -45,10 +47,11 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
+
 # Add items to rooms
 
 room['outside'].items = [items['herb']]
-room['overlook'].items = [items['ring'], items['potion']]
+room['foyer'].items = [items['ring'], items['potion']]
 
 #
 # Main
@@ -73,6 +76,10 @@ directions = ['n', 's', 'e', 'w']
 
 while True:
     print(f'\nCurrent room: {new_player.current_room.name}.')
+
+    if new_player.current_room.name == "Grand Overlook" and new_player.enlightened == True:
+        print(f'\nThe effects of the potion allow you to see magic platforms that traverse the chasm.\n')
+
     print(f'"{new_player.current_room.description}"\n')
 
     if new_player.current_room.items:
@@ -99,6 +106,14 @@ while True:
                     new_player.inventory.remove(i)
                     new_player.current_room.items.append(i)
                     i.on_drop()
+        if verb == 'use':
+            for i in new_player.inventory:
+                if i.name == item:
+                    if item == 'potion':
+                        new_player.inventory.remove(i)
+                        print('\nYou begin to sense magical energy around you.')
+                        room['overlook'].n_to = room['secret']
+                        new_player.enlightened = True
 
     if len(command) == 1:
         command = command[0]
