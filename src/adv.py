@@ -82,6 +82,9 @@ while True:
 
     print(f'"{new_player.current_room.description}"\n')
 
+    if new_player.current_room.name == "Secret Room":
+        break
+
     if new_player.current_room.items:
         print(f'Loot available: {new_player.current_room.items}\n')
 
